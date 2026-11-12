@@ -576,32 +576,47 @@ footer a:hover{color:var(--gold)}
     }
   }
 
+  function scrollPos() {
+    return window.pageYOffset || document.documentElement.scrollTop || 0;
+  }
+
   function drawField(t) {
     stg.clearRect(0, 0, STW, STH);
+    var off = (scrollPos() * 0.35) / STSCALE;
     for (var i = 0; i < field.length; i++) {
       var f = field[i];
       var b = 0.5 + 0.5 * Math.sin(t * 0.0012 * f.sp + f.p);
       if (b < 0.28) continue;
+      var yy = (f.y - off) % STH;
+      if (yy < 0) yy += STH;
+      yy = Math.round(yy);
       stg.fillStyle = b > 0.82 ? '#fdf3d8' : (b > 0.52 ? '#c9b3ee' : '#6b5a9a');
-      stg.fillRect(f.x, f.y, 1, 1);
+      stg.fillRect(f.x, yy, 1, 1);
       if (f.big && b > 0.78) {
         stg.fillStyle = '#f4c65a';
-        stg.fillRect(f.x - 1, f.y, 1, 1);
-        stg.fillRect(f.x + 1, f.y, 1, 1);
-        stg.fillRect(f.x, f.y - 1, 1, 1);
-        stg.fillRect(f.x, f.y + 1, 1, 1);
-        stg.fillRect(f.x, f.y, 1, 1);
+        stg.fillRect(f.x - 1, yy, 1, 1);
+        stg.fillRect(f.x + 1, yy, 1, 1);
+        stg.fillRect(f.x, yy - 1, 1, 1);
+        stg.fillRect(f.x, yy + 1, 1, 1);
+        stg.fillRect(f.x, yy, 1, 1);
       }
     }
   }
 
   buildField();
+  var sRaf = false;
+  window.addEventListener('scroll', function () {
+    if (sRaf) return;
+    sRaf = true;
+    requestAnimationFrame(function () { drawField(performance.now()); sRaf = false; });
+  }, { passive: true });
+
   if (reduce) {
     drawField(0);
   } else {
     var fLast = 0;
     (function floop(now) {
-      if (now - fLast > 110) { fLast = now; drawField(now); }
+      if (now - fLast > 80) { fLast = now; drawField(now); }
       requestAnimationFrame(floop);
     })(0);
   }
@@ -637,8 +652,10 @@ footer a:hover{color:var(--gold)}
         if (f.y > DH + 4) { f.y = -4; f.x = Math.random() * DW; }
       }
       var x = Math.round(f.x + Math.sin(f.p) * 6);
+      var oy = (f.y - scrollPos() * 0.7) % DH;
+      if (oy < 0) oy += DH;
       dg.globalAlpha = 0.45 + 0.4 * (0.5 + 0.5 * Math.sin(f.p));
-      px(dg, x, Math.round(f.y), f.s, f.s, f.c);
+      px(dg, x, Math.round(oy), f.s, f.s, f.c);
     }
     dg.globalAlpha = 1;
   }
@@ -812,6 +829,9 @@ footer a:hover{color:var(--gold)}
 </script>
 </body>
 </html>
+
+
+
 
 
 
