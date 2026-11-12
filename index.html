@@ -17,9 +17,9 @@
 
 :root{
   --ink:#141024;          /* 边框、规线 */
-  --ink-1:#3a3057;        /* 大标题：偏紫的深灰 */
-  --ink-2:#5c5179;        /* 正文：淡一点 */
-  --ink-3:#6d5d8a;        /* 小字、标签：更淡 */
+  --ink-1:#33294f;        /* 大标题：偏紫的深灰 */
+  --ink-2:#4e4370;        /* 正文：淡一点 */
+  --ink-3:#6f5f8c;        /* 小字、标签：更淡 */
   --void:#08050f;
   --v1:#150c2a;
   --v2:#2b1750;
@@ -44,7 +44,8 @@ img,canvas{display:block}
 ::selection{background:var(--gold);color:var(--ink)}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
-/* ---------- 全站飘落的小星星 ---------- */
+/* ---------- 全站星空 ---------- */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;image-rendering:pixelated}
 #drift{position:fixed;inset:0;z-index:1;pointer-events:none;image-rendering:pixelated}
 #page{position:relative;z-index:2}
 
@@ -88,11 +89,12 @@ main{padding:96px 0 0}
 .band + .band{margin-top:110px}
 .sheet{
   position:relative;width:min(1040px,100%);
-  background:var(--paper);color:var(--ink-2);
+  background:rgba(248,233,199,.88);color:var(--ink-2);
   border:3px solid var(--ink);
   box-shadow:10px 10px 0 rgba(0,0,0,.55);
   padding:clamp(20px,3.6vw,34px);
 }
+#works.sheet,#contact.sheet{background:rgba(248,233,199,.84)}
 .sheet::after{
   content:"";position:absolute;inset:0;pointer-events:none;opacity:.055;
   background-image:repeating-conic-gradient(#000 0 25%,transparent 0 50%);
@@ -150,7 +152,7 @@ main{padding:96px 0 0}
 .deck{margin:14px 0 24px;max-width:62ch;font-size:12px;line-height:2;color:var(--ink-2)}
 .works{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
 .card{
-  display:flex;flex-direction:column;background:var(--paper);
+  display:flex;flex-direction:column;background:rgba(244,231,201,.92);
   border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(20,16,36,.35);
   padding:8px;
 }
@@ -242,6 +244,7 @@ footer a:hover{color:var(--gold)}
 </head>
 <body>
 
+<canvas id="stars" aria-hidden="true"></canvas>
 <canvas id="drift" aria-hidden="true"></canvas>
 <div id="bar" aria-hidden="true"></div>
 <nav id="nav" aria-label="页面导航">
@@ -545,6 +548,64 @@ footer a:hover{color:var(--gold)}
     })(0);
   }
 
+  /* ================= 全站星空 ================= */
+  var starCv = document.getElementById('stars');
+  var stg = starCv.getContext('2d');
+  var STW = 0, STH = 0, STSCALE = 4, field = [];
+
+  function buildField() {
+    var vw = document.documentElement.clientWidth;
+    var vh = document.documentElement.clientHeight;
+    STSCALE = vw < 720 ? 3 : 4;
+    STW = Math.ceil(vw / STSCALE);
+    STH = Math.ceil(vh / STSCALE);
+    starCv.width = STW; starCv.height = STH;
+    starCv.style.width = (STW * STSCALE) + 'px';
+    starCv.style.height = (STH * STSCALE) + 'px';
+    stg.imageSmoothingEnabled = false;
+    field = [];
+    var n = Math.round(STW * STH / 185);
+    for (var i = 0; i < n; i++) {
+      field.push({
+        x: Math.floor(Math.random() * STW),
+        y: Math.floor(Math.random() * STH),
+        p: Math.random() * 6.283,
+        sp: 0.4 + Math.random() * 1.2,
+        big: Math.random() < 0.12
+      });
+    }
+  }
+
+  function drawField(t) {
+    stg.clearRect(0, 0, STW, STH);
+    for (var i = 0; i < field.length; i++) {
+      var f = field[i];
+      var b = 0.5 + 0.5 * Math.sin(t * 0.0012 * f.sp + f.p);
+      if (b < 0.28) continue;
+      stg.fillStyle = b > 0.82 ? '#fdf3d8' : (b > 0.52 ? '#c9b3ee' : '#6b5a9a');
+      stg.fillRect(f.x, f.y, 1, 1);
+      if (f.big && b > 0.78) {
+        stg.fillStyle = '#f4c65a';
+        stg.fillRect(f.x - 1, f.y, 1, 1);
+        stg.fillRect(f.x + 1, f.y, 1, 1);
+        stg.fillRect(f.x, f.y - 1, 1, 1);
+        stg.fillRect(f.x, f.y + 1, 1, 1);
+        stg.fillRect(f.x, f.y, 1, 1);
+      }
+    }
+  }
+
+  buildField();
+  if (reduce) {
+    drawField(0);
+  } else {
+    var fLast = 0;
+    (function floop(now) {
+      if (now - fLast > 110) { fLast = now; drawField(now); }
+      requestAnimationFrame(floop);
+    })(0);
+  }
+
   /* ================= 飘落 ================= */
   var drift = document.getElementById('drift');
   var dg = drift.getContext('2d');
@@ -557,12 +618,12 @@ footer a:hover{color:var(--gold)}
     drift.style.width = DW + 'px'; drift.style.height = DH + 'px';
     dg.imageSmoothingEnabled = false;
     flakes = [];
-    var n = Math.round(Math.min(46, DW * DH / 34000));
+    var n = Math.round(Math.min(90, DW * DH / 16000));
     for (var i = 0; i < n; i++) {
       flakes.push({
         x: Math.random() * DW, y: Math.random() * DH,
-        v: 6 + Math.random() * 12, s: 2,
-        p: Math.random() * 6.283, c: Math.random() < 0.25 ? '#8a6fd0' : '#f4c65a'
+        v: 6 + Math.random() * 12, s: Math.random() < 0.25 ? 3 : 2,
+        p: Math.random() * 6.283, c: Math.random() < 0.3 ? '#b9a3e6' : '#f4c65a'
       });
     }
   }
@@ -576,7 +637,7 @@ footer a:hover{color:var(--gold)}
         if (f.y > DH + 4) { f.y = -4; f.x = Math.random() * DW; }
       }
       var x = Math.round(f.x + Math.sin(f.p) * 6);
-      dg.globalAlpha = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(f.p));
+      dg.globalAlpha = 0.45 + 0.4 * (0.5 + 0.5 * Math.sin(f.p));
       px(dg, x, Math.round(f.y), f.s, f.s, f.c);
     }
     dg.globalAlpha = 1;
@@ -742,8 +803,8 @@ footer a:hover{color:var(--gold)}
   window.addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      buildScene(); buildDrift();
-      if (reduce) { drawScene(0); drawDrift(0); }
+      buildScene(); buildField(); buildDrift();
+      if (reduce) { drawScene(0); drawField(0); drawDrift(0); }
     }, 200);
   });
   onScroll();
@@ -751,6 +812,10 @@ footer a:hover{color:var(--gold)}
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
