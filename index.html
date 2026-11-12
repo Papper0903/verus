@@ -1,0 +1,756 @@
+﻿<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>缜理 · VERUS</title>
+<meta name="description" content="缜理 / verus — 一个主观唯心主义者的夜航。像素夜空、三张报纸、一枚月亮。">
+<meta name="theme-color" content="#08050f">
+<meta property="og:type" content="website">
+<meta property="og:title" content="缜理 · VERUS">
+<meta property="og:description" content="一个主观唯心主义者的夜航。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%2308050f'/%3E%3Crect x='5' y='3' width='6' height='1' fill='%23f7e8c4'/%3E%3Crect x='4' y='4' width='8' height='7' fill='%23f7e8c4'/%3E%3Crect x='5' y='11' width='6' height='1' fill='%23f7e8c4'/%3E%3C/svg%3E">
+<style>
+/* ---------- 字体：本地 ---------- */
+@font-face{font-family:Zpix;src:url(fonts/zpix.woff2) format("woff2");font-display:swap}
+@font-face{font-family:Silkscreen;font-weight:400;font-display:swap;src:url(fonts/silkscreen-400.ttf) format("truetype")}
+
+:root{
+  --ink:#141024;          /* 边框、规线 */
+  --ink-1:#3a3057;        /* 大标题：偏紫的深灰 */
+  --ink-2:#5c5179;        /* 正文：淡一点 */
+  --ink-3:#6d5d8a;        /* 小字、标签：更淡 */
+  --void:#08050f;
+  --v1:#150c2a;
+  --v2:#2b1750;
+  --v3:#3d2468;
+  --lav:#b9a3e6;
+  --star:#f7e8c4;
+  --gold:#f4c65a;
+  --paper:#f4e7c9;
+  --f-px:"Zpix","Silkscreen",ui-monospace,monospace;
+  --f-lbl:"Silkscreen","Zpix",ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--void);color:var(--lav);
+  font:12px/2 var(--f-px);letter-spacing:.02em;
+  overflow-x:hidden;
+  -webkit-font-smoothing:none;font-smooth:never;
+}
+a{color:inherit;text-decoration:none}
+img,canvas{display:block}
+::selection{background:var(--gold);color:var(--ink)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- 全站飘落的小星星 ---------- */
+#drift{position:fixed;inset:0;z-index:1;pointer-events:none;image-rendering:pixelated}
+#page{position:relative;z-index:2}
+
+/* ---------- 顶栏 ---------- */
+#bar{position:fixed;top:0;left:0;height:4px;width:100%;transform:scaleX(0);transform-origin:0 50%;
+  background:var(--gold);z-index:9;image-rendering:pixelated}
+#nav{position:fixed;top:14px;right:14px;z-index:8;display:none;border:2px solid var(--v3);
+  background:rgba(8,5,15,.82);padding:2px}
+#nav.on{display:flex}
+#nav a{font:8px/1 var(--f-lbl);letter-spacing:.16em;padding:8px 10px;color:var(--lav)}
+#nav a:hover{background:var(--v2);color:var(--star)}
+@media (max-width:760px){#nav.on{display:none}}
+
+/* ---------- 首屏 ---------- */
+#hero{position:relative;height:100svh;min-height:560px;overflow:hidden}
+#scene{position:absolute;inset:0;z-index:0;width:100%;height:100%;image-rendering:pixelated}
+.hero-inner{position:absolute;left:6%;bottom:13%;z-index:3;max-width:80%}
+.eyebrow{
+  font:10px/1 var(--f-lbl);letter-spacing:.3em;color:var(--gold);
+  margin:0 0 18px;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before,.eyebrow::after{content:"";width:18px;height:2px;background:var(--v3)}
+h1{
+  margin:0;font-family:var(--f-px);font-weight:400;font-size:96px;line-height:1;
+  color:var(--star);letter-spacing:4px;
+  text-shadow:6px 6px 0 var(--v2);
+}
+.romaji{margin:14px 0 0;font:12px/1 var(--f-lbl);letter-spacing:.7em;color:var(--gold)}
+.tag{margin:22px 0 0;font-size:12px;letter-spacing:.2em;color:var(--lav)}
+.tag b{font-weight:400;color:var(--star)}
+.cue{
+  position:absolute;left:6%;bottom:5%;z-index:3;
+  font:8px/1 var(--f-lbl);letter-spacing:.3em;color:var(--v3);
+}
+.cue span{display:inline-block;color:var(--gold);animation:blink 1.6s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- 报纸 ---------- */
+main{padding:96px 0 0}
+.band{padding:0 14px;display:flex;justify-content:center}
+.band + .band{margin-top:110px}
+.sheet{
+  position:relative;width:min(1040px,100%);
+  background:var(--paper);color:var(--ink-2);
+  border:3px solid var(--ink);
+  box-shadow:10px 10px 0 rgba(0,0,0,.55);
+  padding:clamp(20px,3.6vw,34px);
+}
+.sheet::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.055;
+  background-image:repeating-conic-gradient(#000 0 25%,transparent 0 50%);
+  background-size:4px 4px;mix-blend-mode:multiply;
+}
+.sheet::before{
+  content:"";position:absolute;inset:7px;border:1px solid rgba(20,16,36,.22);pointer-events:none;
+}
+.masthead{position:relative;z-index:1}
+.kicker{
+  display:flex;justify-content:space-between;gap:10px;
+  font:8px/1 var(--f-lbl);letter-spacing:.18em;color:var(--ink-3);
+  padding-bottom:8px;border-bottom:2px solid var(--ink);
+}
+.plate{
+  margin:12px 0 10px;font-family:var(--f-px);font-weight:400;
+  font-size:72px;line-height:.95;letter-spacing:6px;color:var(--ink-1);
+}
+.plate em{
+  font:12px/1 var(--f-lbl);font-style:normal;letter-spacing:.5em;
+  color:var(--ink-3);display:inline-block;margin-left:18px;vertical-align:super;
+}
+.meta-line{
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font:8px/1.6 var(--f-lbl);letter-spacing:.1em;color:var(--ink-3);
+  border-top:1px solid var(--ink);border-bottom:3px double var(--ink);
+  padding:6px 0;
+}
+.cols{display:grid;grid-template-columns:1fr 232px;gap:26px;margin-top:24px}
+.statement{
+  margin:0;font-family:var(--f-px);font-weight:400;font-size:48px;line-height:1.5;
+  letter-spacing:4px;color:rgba(92,81,121,.88);align-self:center;
+}
+.file{border:2px solid var(--ink);padding:12px;align-self:start;background:rgba(255,255,255,.18)}
+.file h3{
+  margin:0 0 8px;font:8px/1 var(--f-lbl);letter-spacing:.2em;color:var(--ink-3);
+  display:flex;justify-content:space-between;border-bottom:1px solid var(--ink);padding-bottom:6px;
+}
+.file .row{display:flex;align-items:baseline;gap:6px;padding:6px 0;border-bottom:1px dotted rgba(20,16,36,.5)}
+.file .row:last-child{border:0}
+.file dt{font:8px/1 var(--f-lbl);letter-spacing:.1em;color:var(--ink-3);white-space:nowrap}
+.file dd{margin:0 0 0 auto;text-align:right;font-size:12px;line-height:1.6}
+.sign{
+  margin-top:26px;padding-top:20px;border-top:3px double var(--ink);
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.sign .cn{font-family:var(--f-px);font-size:36px;letter-spacing:6px;color:var(--ink-1)}
+.sign .en{font:8px/1.6 var(--f-lbl);letter-spacing:.28em;color:var(--ink-3);text-align:right}
+
+/* ---------- 作品 ---------- */
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  border-bottom:3px double var(--ink);padding-bottom:10px}
+.sec-head h2{margin:0;font-family:var(--f-px);font-weight:400;font-size:36px;letter-spacing:4px;color:var(--ink-1)}
+.sec-head .sub{font:8px/1.8 var(--f-lbl);letter-spacing:.18em;color:var(--ink-3);text-align:right}
+.deck{margin:14px 0 24px;max-width:62ch;font-size:12px;line-height:2;color:var(--ink-2)}
+.works{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+.card{
+  display:flex;flex-direction:column;background:var(--paper);
+  border:2px solid var(--ink);box-shadow:6px 6px 0 rgba(20,16,36,.35);
+  padding:8px;
+}
+.card canvas{width:100%;height:auto;border:1px solid var(--ink);image-rendering:pixelated;background:#0d0620}
+.card .no{font:8px/1 var(--f-lbl);letter-spacing:.16em;color:var(--ink-3);margin:10px 0 6px}
+.card h3{margin:0 0 4px;font-family:var(--f-px);font-weight:400;font-size:24px;line-height:1.25;letter-spacing:1px;color:var(--ink-1)}
+.card .by{margin:0 0 10px;font:8px/1.6 var(--f-lbl);letter-spacing:.14em;color:var(--ink-3)}
+.card .note{margin:0 0 14px;font-size:12px;line-height:1.9;color:var(--ink-2)}
+.card .go{
+  margin-top:auto;align-self:flex-start;
+  font:8px/1 var(--f-lbl);letter-spacing:.14em;color:var(--ink-1);
+  border-bottom:2px solid var(--gold);padding-bottom:4px;display:inline-flex;gap:6px;
+}
+.card .go:hover{background:var(--gold)}
+
+/* ---------- 联系 ---------- */
+#contact.sheet{width:min(720px,100%)}
+.contact-sub{margin:12px 0 22px;font-size:12px;color:var(--ink-2)}
+.rows{border-top:2px solid var(--ink)}
+.crow{display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid rgba(20,16,36,.35)}
+.crow .k{font:8px/1 var(--f-lbl);letter-spacing:.16em;color:var(--ink-3);width:62px;flex:none}
+.crow .v{font-size:24px;letter-spacing:.04em}
+.crow .v em{font-style:normal;color:#8a7aa8;margin-right:2px}
+.copy{
+  margin-left:auto;cursor:pointer;background:var(--paper);color:var(--ink-1);
+  border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  font:8px/1 var(--f-lbl);letter-spacing:.14em;padding:7px 10px;
+}
+.copy:active{transform:translate(3px,3px);box-shadow:none}
+.copy.done{background:var(--ink);color:var(--paper)}
+.cfoot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;
+  font-size:12px;color:var(--ink-3)}
+.cfoot span:last-child{font:8px/1 var(--f-lbl);letter-spacing:.18em}
+
+/* ---------- 结尾 ---------- */
+#epilogue{position:relative;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:80px 20px 90px;overflow:hidden;margin-top:110px}
+#moon{width:min(74vmin,480px);height:auto;image-rendering:pixelated;position:relative;z-index:2}
+.epi{position:relative;z-index:3;text-align:center;margin-top:30px}
+.epi .lbl{font:8px/1 var(--f-lbl);letter-spacing:.4em;color:#8a78b8;margin:0 0 16px}
+.epi h2{margin:0;font-family:var(--f-px);font-weight:400;font-size:48px;letter-spacing:6px;color:var(--star);
+  text-shadow:4px 4px 0 var(--v2)}
+.epi p{margin:18px 0 0;font-size:12px;letter-spacing:.16em;color:var(--lav)}
+.epi .sig{margin-top:34px;border:0;padding:0;display:block}
+.epi .sig .cn{font-size:24px;color:var(--gold);letter-spacing:4px}
+.epi .sig .en{font:8px/1 var(--f-lbl);letter-spacing:.4em;color:#6b5a8a;margin-top:10px;text-align:center}
+
+/* ---------- 页脚 ---------- */
+footer{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:26px 18px 34px;border-top:2px solid var(--v1);
+  font:8px/1.8 var(--f-lbl);letter-spacing:.18em;color:var(--ink-3);
+}
+footer a:hover{color:var(--gold)}
+
+/* ---------- 浮现 ---------- */
+.rv{opacity:0;transform:translateY(18px)}
+.rv.in{opacity:1;transform:none;transition:opacity .5s steps(5),transform .5s steps(5)}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr;gap:18px}
+  .works{grid-template-columns:1fr;max-width:340px;margin:0 auto;gap:26px}
+  h1{font-size:60px}
+  .plate{font-size:48px;letter-spacing:4px}
+  .sec-head h2{font-size:24px}
+  .epi h2{font-size:36px;letter-spacing:4px}
+  .sign .cn{font-size:24px}
+  .statement{font-size:24px;letter-spacing:2px}
+}
+@media (max-width:640px){
+  main{padding-top:70px}
+  .band + .band{margin-top:80px}
+  .hero-inner{left:7%;bottom:16%}
+  h1{font-size:48px;text-shadow:4px 4px 0 var(--v2)}
+  .romaji{letter-spacing:.45em}
+  .crow{flex-wrap:wrap}
+  .crow .v{width:100%;order:3}
+  .kicker span:nth-child(2){display:none}
+  .meta-line span:nth-child(2){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none}
+  .cue span{animation:none}
+}
+</style>
+<noscript><style>.rv{opacity:1;transform:none}#drift,#scene,#moon{display:none}</style></noscript>
+</head>
+<body>
+
+<canvas id="drift" aria-hidden="true"></canvas>
+<div id="bar" aria-hidden="true"></div>
+<nav id="nav" aria-label="页面导航">
+  <a href="#about">ABOUT</a><a href="#works">WORKS</a><a href="#contact">CONTACT</a><a href="#epilogue">MOON</a>
+</nav>
+
+<div id="page">
+
+  <header id="hero">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <div class="hero-inner">
+      <p class="eyebrow">NO.0903 · A QUIET NIGHT</p>
+      <h1>缜理</h1>
+      <p class="romaji">VERUS</p>
+      <p class="tag">一个 <b>主观唯心主义者</b> 的夜航</p>
+    </div>
+    <a class="cue" href="#about"><span>▼</span> SCROLL</a>
+  </header>
+
+  <main>
+
+    <!-- 01 ABOUT -->
+    <div class="band">
+      <article class="sheet rv" id="about">
+        <div class="masthead">
+          <div class="kicker">
+            <span>THE SHADOW GAZETTE</span>
+            <span>缜理 · 自述</span>
+            <span>NO.01</span>
+          </div>
+          <h2 class="plate">缜理<em>VERUS</em></h2>
+          <div class="meta-line">
+            <span>VOL. I — NO. 070903</span>
+            <span>2003.07.09</span>
+            <span>PRICE: ONE SHADOW</span>
+          </div>
+        </div>
+
+        <div class="cols">
+          <p class="statement">一个主观唯心主义者</p>
+          <aside class="file">
+            <h3><span>档案 / FILE</span><span>01</span></h3>
+            <dl>
+              <div class="row"><dt>NAME</dt><dd>缜理 · verus</dd></div>
+              <div class="row"><dt>BORN</dt><dd>07 · 09 · 03</dd></div>
+              <div class="row"><dt>STANCE</dt><dd>主观唯心主义</dd></div>
+              <div class="row"><dt>MOTTO</dt><dd>获得幸福吧。</dd></div>
+            </dl>
+          </aside>
+        </div>
+
+        <div class="sign">
+          <span class="cn">获得幸福吧。</span>
+          <span class="en">MAY YOU BE HAPPY<br>— SIGNATURE —</span>
+        </div>
+      </article>
+    </div>
+
+    <!-- 02 WORKS -->
+    <div class="band">
+      <article class="sheet rv" id="works">
+        <div class="sec-head">
+          <h2>个人推荐作品</h2>
+          <div class="sub">RECOMMENDED WORKS<br>VOL. I — 三件</div>
+        </div>
+        <p class="deck">三样我反复回到的东西：一本讲影子的书，一首在很远的地方叫你的歌，和一部关于火花的电影。</p>
+
+        <div class="works">
+          <figure class="card">
+            <canvas class="art" data-art="book" width="64" height="86" aria-label="《偷影子的人》像素封面"></canvas>
+            <figcaption>
+              <p class="no">01 — BOOK</p>
+              <h3>偷影子的人</h3>
+              <p class="by">MARC LEVY / 马克·李维</p>
+              <p class="note">一个人偷走别人的影子，也就偷走了他们没说出口的那部分。</p>
+              <a class="go" href="https://search.douban.com/book/subject_search?search_text=偷影子的人" target="_blank" rel="noopener">书籍页面 ▶</a>
+            </figcaption>
+          </figure>
+
+          <figure class="card">
+            <canvas class="art" data-art="song" width="64" height="86" aria-label="八木海莉《know me...》像素封面"></canvas>
+            <figcaption>
+              <p class="no">02 — SONG</p>
+              <h3>know me...</h3>
+              <p class="by">八木海莉 / SINGLE</p>
+              <p class="note">像有人在很远的地方，轻轻叫了一声你的名字。</p>
+              <a class="go" href="https://www.youtube.com/results?search_query=八木海莉+know+me" target="_blank" rel="noopener">播放页面 ▶</a>
+            </figcaption>
+          </figure>
+
+          <figure class="card">
+            <canvas class="art" data-art="soul" width="64" height="86" aria-label="《心灵奇旅》像素海报"></canvas>
+            <figcaption>
+              <p class="no">03 — FILM</p>
+              <h3>心灵奇旅</h3>
+              <p class="by">SOUL / PIXAR · 2020</p>
+              <p class="note">活着这件事本身，就是那一点火花。</p>
+              <a class="go" href="https://en.wikipedia.org/wiki/Soul_(2020_film)" target="_blank" rel="noopener">影片介绍 ▶</a>
+            </figcaption>
+          </figure>
+        </div>
+      </article>
+    </div>
+
+    <!-- 03 CONTACT -->
+    <div class="band">
+      <article class="sheet rv" id="contact">
+        <div class="sec-head">
+          <h2>learn about me</h2>
+          <div class="sub">FIND ME<br>夜航收件处</div>
+        </div>
+        <p class="contact-sub">不擅长寒暄，但很擅长回信。</p>
+
+        <div class="rows">
+          <div class="crow">
+            <span class="k">WECHAT</span>
+            <span class="v"><em>vx.</em>zhenli09_03</span>
+            <button class="copy" type="button" data-copy="zhenli09_03">COPY</button>
+          </div>
+          <div class="crow">
+            <span class="k">QQ</span>
+            <span class="v"><em>qq.</em>2183465142</span>
+            <button class="copy" type="button" data-copy="2183465142">COPY</button>
+          </div>
+        </div>
+
+        <div class="cfoot">
+          <span>如果夜里睡不着，可以来找我说说影子的事。</span>
+          <span>EST. 07 · 09 · 03</span>
+        </div>
+      </article>
+    </div>
+
+    <!-- 04 EPILOGUE -->
+    <section id="epilogue">
+      <canvas id="moon" aria-hidden="true"></canvas>
+      <div class="epi rv">
+        <p class="lbl">EPILOGUE · 尾声</p>
+        <h2>月亮升起来了</h2>
+        <p>影子都回了家，愿你也是。</p>
+        <div class="sig">
+          <p class="cn">获得幸福吧。</p>
+          <p class="en">MAY YOU BE HAPPY</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>© 2026 缜理 · VERUS</span>
+    <span>MADE OF SHADOWS &amp; STARLIGHT</span>
+    <a href="#hero">▲ TOP</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function px(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); }
+  function disc(g, cx, cy, r, c) {
+    for (var y = -r; y <= r; y++) for (var x = -r; x <= r; x++) if (x * x + y * y <= r * r) px(g, cx + x, cy + y, 1, 1, c);
+  }
+
+  /* ================= 首屏像素夜空 ================= */
+  var scene = document.getElementById('scene');
+  var sg = scene.getContext('2d');
+  var SW = 0, SH = 0, stars = [];
+
+  function buildScene() {
+    var heroEl = document.getElementById('hero');
+    var r = heroEl.getBoundingClientRect();
+    var vw = Math.round(r.width) || window.innerWidth;
+    var vh = Math.round(r.height) || window.innerHeight;
+    var target = vw < 720 ? 130 : 340;
+    var scale = Math.max(1, Math.round(vw / target));
+    SW = Math.max(80, Math.round(vw / scale));
+    SH = Math.max(80, Math.round(vh / scale));
+    scene.width = SW; scene.height = SH;
+    scene.style.width = (SW * scale) + 'px';
+    scene.style.height = (SH * scale) + 'px';
+    sg.imageSmoothingEnabled = false;
+    stars = [];
+    var n = Math.round(SW * SH / 1600);
+    for (var i = 0; i < n; i++) {
+      stars.push({
+        x: Math.floor(Math.random() * SW),
+        y: Math.floor(Math.random() * SH * 0.58),
+        p: Math.random() * 6.283,
+        b: Math.random() < 0.14
+      });
+    }
+  }
+
+  function ridge(g, w, h, baseF, ampF, col, edge, freq, phase) {
+    var base = baseF * h, amp = ampF * h, ys = [];
+    for (var x = 0; x < w; x++) {
+      var y = Math.round(base + Math.sin(x * 0.05 * freq + phase) * amp + Math.sin(x * 0.11 * freq + phase * 1.7) * amp * 0.4);
+      ys.push(y);
+      px(g, x, y, 1, h - y, col);
+      if ((x & 1) === 0 && y > 0) px(g, x, y - 1, 1, 1, edge);
+    }
+    return ys;
+  }
+
+  var FIG = [
+    '...####...', '..######..', '..######..', '...####...',
+    '..######..', '.########.', '.########.', '.########.',
+    '..######..', '..######..', '..##..##..', '..##..##..',
+    '..##..##..', '.###..###.', '.###..###.', '###....###'
+  ];
+  var MINI = ['..##..', '.####.', '.####.', '..##..', '.####.', '######', '######', '.####.', '##..##', '#....#'];
+
+  function sprite(g, x, y, art, col) {
+    for (var j = 0; j < art.length; j++) for (var i = 0; i < art[j].length; i++) {
+      if (art[j][i] === '#') px(g, x + i, y + j, 1, 1, col);
+    }
+  }
+
+  function moonArt(g, cx, cy, r) {
+    for (var yy = -r; yy <= r; yy++) for (var xx = -r; xx <= r; xx++) {
+      if (xx * xx + yy * yy > r * r) continue;
+      var t = (xx + yy) / r, odd = (xx + yy) & 1, col;
+      if (t < -0.35) col = '#fdf5dd';
+      else if (t < 0.15) col = odd ? '#fdf5dd' : '#f8eac6';
+      else if (t < 0.55) col = odd ? '#f8eac6' : '#e8d5a8';
+      else col = '#e2cd9e';
+      px(g, cx + xx, cy + yy, 1, 1, col);
+    }
+    disc(g, cx - Math.round(r * 0.32), cy - Math.round(r * 0.24), Math.max(2, Math.round(r * 0.15)), '#d8c294');
+    disc(g, cx + Math.round(r * 0.28), cy + Math.round(r * 0.26), Math.max(1, Math.round(r * 0.1)), '#d8c294');
+    disc(g, cx - Math.round(r * 0.02), cy + Math.round(r * 0.46), Math.max(1, Math.round(r * 0.07)), '#d8c294');
+  }
+
+  function drawScene(t) {
+    var g = sg, w = SW, h = SH;
+    if (!w) return;
+
+    var bands = [[0, '#080510'], [0.28, '#0e0820'], [0.43, '#181033'], [0.55, '#251545'], [0.62, '#33205e']];
+    for (var y = 0; y < h; y++) {
+      var c = bands[0][1];
+      for (var b = 0; b < bands.length; b++) if (y / h >= bands[b][0]) c = bands[b][1];
+      px(g, 0, y, w, 1, c);
+    }
+    for (var b2 = 1; b2 < bands.length; b2++) {
+      var yb = Math.round(bands[b2][0] * h);
+      for (var dy = 1; dy <= 6; dy++) {
+        var dens = 1 - dy / 7;
+        for (var x = 0; x < w; x++) {
+          var bayer = ((x & 1) * 2 + (dy & 1)) / 4 + 0.01;
+          if (bayer < dens) px(g, x, yb - dy, 1, 1, bands[b2][1]);
+        }
+      }
+    }
+
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      if (Math.sin(t / 800 + s.p) <= 0.1) continue;
+      px(g, s.x, s.y, s.b ? 2 : 1, 1, s.b ? '#f7e8c4' : '#8f78c8');
+      if (s.b && Math.sin(t / 500 + s.p) > 0.6) px(g, s.x, s.y - 1, 1, 1, '#f7e8c4');
+    }
+
+    var mx = Math.round(w * 0.74), my = Math.round(h * 0.19);
+    var mr = Math.max(7, Math.round(h * (SW < 220 ? 0.09 : 0.105)));
+    moonArt(g, mx, my, mr);
+
+    ridge(g, w, h, 0.655, 0.012, '#1b1034', '#291748', 1.3, 0.4);
+    var near = ridge(g, w, h, 0.76, 0.022, '#0a0614', '#150c28', 1.0, 0.0);
+
+    var fx = Math.round(w * 0.56);
+    sprite(g, fx, near[fx] - 16, FIG, '#05030c');
+    var f2 = Math.round(w * 0.30);
+    sprite(g, f2, near[f2] - 10, MINI, '#070411');
+    var f3 = Math.round(w * 0.87);
+    sprite(g, f3, near[f3] - 10, MINI, '#070411');
+
+    var flies = [[0.40, 0.80], [0.64, 0.84], [0.80, 0.79], [0.22, 0.86]];
+    for (var fi = 0; fi < flies.length; fi++) {
+      if (Math.sin(t / 900 + fi * 2.1) > 0.1) px(g, Math.round(flies[fi][0] * w), Math.round(flies[fi][1] * h), 1, 1, '#f4c65a');
+    }
+
+    var cyc = t % 12000;
+    if (cyc < 620 && !reduce) {
+      var q = cyc / 620, sx0 = Math.round(w * (0.10 + 0.45 * q)), sy0 = Math.round(h * (0.14 + 0.10 * q));
+      px(g, sx0, sy0, 5, 1, '#f8eac6');
+      px(g, sx0 - 4, sy0 - 1, 4, 1, '#8a6fd0');
+      px(g, sx0 - 8, sy0 - 2, 3, 1, '#3a2560');
+    }
+  }
+
+  buildScene();
+  if (reduce) {
+    drawScene(0);
+  } else {
+    var lt = 0;
+    (function loop(now) {
+      if (now - lt > 120) { lt = now; drawScene(now); }
+      requestAnimationFrame(loop);
+    })(0);
+  }
+
+  /* ================= 飘落 ================= */
+  var drift = document.getElementById('drift');
+  var dg = drift.getContext('2d');
+  var DW = 0, DH = 0, flakes = [];
+
+  function buildDrift() {
+    DW = document.documentElement.clientWidth;
+    DH = document.documentElement.clientHeight;
+    drift.width = DW; drift.height = DH;
+    drift.style.width = DW + 'px'; drift.style.height = DH + 'px';
+    dg.imageSmoothingEnabled = false;
+    flakes = [];
+    var n = Math.round(Math.min(46, DW * DH / 34000));
+    for (var i = 0; i < n; i++) {
+      flakes.push({
+        x: Math.random() * DW, y: Math.random() * DH,
+        v: 6 + Math.random() * 12, s: 2,
+        p: Math.random() * 6.283, c: Math.random() < 0.25 ? '#8a6fd0' : '#f4c65a'
+      });
+    }
+  }
+
+  function drawDrift(dt) {
+    dg.clearRect(0, 0, DW, DH);
+    for (var i = 0; i < flakes.length; i++) {
+      var f = flakes[i];
+      if (!reduce) {
+        f.y += f.v * dt; f.p += dt * 2;
+        if (f.y > DH + 4) { f.y = -4; f.x = Math.random() * DW; }
+      }
+      var x = Math.round(f.x + Math.sin(f.p) * 6);
+      dg.globalAlpha = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(f.p));
+      px(dg, x, Math.round(f.y), f.s, f.s, f.c);
+    }
+    dg.globalAlpha = 1;
+  }
+
+  buildDrift();
+  if (reduce) {
+    drawDrift(0);
+  } else {
+    var dLast = 0;
+    (function dloop(now) {
+      var dt = dLast ? Math.min(0.05, (now - dLast) / 1000) : 0;
+      dLast = now;
+      drawDrift(dt);
+      requestAnimationFrame(dloop);
+    })(0);
+  }
+
+  /* ================= 三张像素封面 ================= */
+  function drawBook(g, w, h) {
+    for (var y = 0; y < h; y++) {
+      var t = y / h;
+      px(g, 0, y, w, 1, t < 0.42 ? '#2a1650' : t < 0.72 ? '#1d0f3a' : '#120826');
+    }
+    var st = [[6, 12], [15, 7], [23, 17], [39, 9], [51, 21], [9, 31], [29, 27], [55, 35], [19, 41], [45, 33], [34, 6], [58, 12]];
+    for (var i = 0; i < st.length; i++) px(g, st[i][0], st[i][1], 1, 1, '#f7e8c4');
+    disc(g, 46, 20, 8, '#f7e8c4');
+    disc(g, 43, 18, 6, '#2a1650');
+    for (var x = 0; x < w; x++) {
+      var yy = Math.round(h * 0.76 + Math.sin(x * 0.14) * 2);
+      px(g, x, yy, 1, h - yy, '#0d0620');
+    }
+    px(g, 0, Math.round(h * 0.755), w, 1, '#3d2468');
+    sprite(g, 15, h - 26, MINI, '#05030c');
+  }
+
+  function drawSong(g, w, h) {
+    px(g, 0, 0, w, h, '#120a24');
+    var ringR = [17, 14];
+    for (var ri = 0; ri < ringR.length; ri++) {
+      var rr = ringR[ri], steps = Math.round(6.283 * rr);
+      for (var k = 0; k < steps; k++) {
+        var a = k / steps * 6.283;
+        px(g, 32 + Math.round(Math.cos(a) * rr), 38 + Math.round(Math.sin(a) * rr), 1, 1, ri === 0 ? '#2f1a55' : '#4a2a80');
+      }
+    }
+    disc(g, 32, 38, 10, '#f4c65a');
+    disc(g, 32, 38, 6, '#f8eac6');
+    var sp = [[12, 18], [52, 22], [46, 56], [16, 52], [30, 14], [34, 64], [56, 44], [8, 40]];
+    for (var i = 0; i < sp.length; i++) px(g, sp[i][0], sp[i][1], 1, 1, '#b9a3e6');
+    for (var x = 8; x < 56; x += 2) {
+      var y = 68 + Math.round(Math.sin(x * 0.4) * 2);
+      px(g, x, y, 1, 3, '#8a6fd0');
+    }
+  }
+
+  function drawSoul(g, w, h) {
+    for (var y = 0; y < h; y++) {
+      px(g, 0, y, w, 1, y < 38 ? '#0e1030' : y < 58 ? '#191440' : '#221a4c');
+    }
+    for (var a = 0; a < 8; a++) {
+      var ang = a * Math.PI / 4;
+      for (var r = 13; r < 21; r++) px(g, 32 + Math.round(Math.cos(ang) * r), 30 + Math.round(Math.sin(ang) * r), 1, 1, '#7a5cc4');
+    }
+    disc(g, 32, 30, 10, '#f4c65a');
+    disc(g, 32, 30, 6, '#fff2cc');
+    px(g, 0, 68, w, 18, '#08040f');
+    for (var i = 0; i < 8; i++) px(g, 4 + i * 8, 70, 5, 16, '#f0e3c4');
+    for (var j = 0; j < 8; j++) px(g, 6 + j * 8, 70, 3, 9, '#0a0518');
+  }
+
+  var ART = { book: drawBook, song: drawSong, soul: drawSoul };
+  document.querySelectorAll('.art').forEach(function (cv) {
+    var fn = ART[cv.getAttribute('data-art')];
+    if (!fn) return;
+    cv.width = 64; cv.height = 86;
+    var g = cv.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    fn(g, 64, 86);
+  });
+
+  /* ================= 结尾的月亮 ================= */
+  var moon = document.getElementById('moon');
+  var mg = moon.getContext('2d');
+  var MW = 96, MH = 96;
+  moon.width = MW; moon.height = MH;
+
+  function drawMoon(t) {
+    mg.clearRect(0, 0, MW, MH);
+    var cx = 48, cy = 46, r = 25, i, a;
+
+    for (i = 0; i < 64; i++) {
+      var ang0 = i * 2.399, rad0 = 28 + ((i * 7) % 19);
+      var dx0 = Math.round(cx + Math.cos(ang0) * rad0), dy0 = Math.round(cy + Math.sin(ang0) * rad0 * 0.92);
+      if (dx0 < 1 || dy0 < 1 || dx0 > MW - 2 || dy0 > MH - 2) continue;
+      px(mg, dx0, dy0, 1, 1, i % 3 ? '#2e2054' : '#5b4a86');
+    }
+
+    for (i = 0; i < 34; i++) {
+      var rx = 27 + (i % 9) * 2.2, ry = rx * 0.62;
+      a = i * 0.9 + t / 2600 * (i % 3 === 0 ? 1.6 : 1);
+      var sx = Math.round(cx + Math.cos(a) * rx), sy = Math.round(cy + Math.sin(a) * ry);
+      if (sx < 1 || sy < 1 || sx > MW - 2 || sy > MH - 2) continue;
+      var tw = 0.5 + 0.5 * Math.sin(t / 400 + i * 1.3);
+      if (tw < 0.25) continue;
+      px(mg, sx, sy, (i % 7 === 0) ? 2 : 1, 1, (i % 3 === 0) ? '#f8eac6' : '#f4c65a');
+    }
+
+    moonArt(mg, cx, cy, r);
+  }
+
+  drawMoon(0);
+  if (!reduce) {
+    var mLast = 0;
+    (function mloop(now) {
+      if (now - mLast > 90) { mLast = now; drawMoon(now); }
+      requestAnimationFrame(mloop);
+    })(0);
+  }
+
+  /* ================= 浮现 / 进度 / 复制 ================= */
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+
+  var bar = document.getElementById('bar');
+  var nav = document.getElementById('nav');
+  var ticking = false;
+  function onScroll() {
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - doc.clientHeight;
+    bar.style.transform = 'scaleX(' + (max > 0 ? doc.scrollTop / max : 0).toFixed(4) + ')';
+    nav.classList.toggle('on', doc.scrollTop > window.innerHeight * 0.7);
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(function () { onScroll(); ticking = false; }); }
+  }, { passive: true });
+
+  function toast(btn, text) {
+    var old = btn.textContent;
+    btn.textContent = text;
+    btn.classList.add('done');
+    setTimeout(function () { btn.textContent = old; btn.classList.remove('done'); }, 1400);
+  }
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var v = btn.getAttribute('data-copy');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(v).then(function () { toast(btn, 'COPIED'); }, function () { legacy(v, btn); });
+      } else { legacy(v, btn); }
+    });
+  });
+  function legacy(v, btn) {
+    var ta = document.createElement('textarea');
+    ta.value = v; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast(btn, 'COPIED'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      buildScene(); buildDrift();
+      if (reduce) { drawScene(0); drawDrift(0); }
+    }, 200);
+  });
+  onScroll();
+})();
+</script>
+</body>
+</html>
+
+
+
